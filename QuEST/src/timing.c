@@ -12,7 +12,7 @@
 // Every run must last for at least 10 ms 
 // True running time about 10-100 times this
 #define MIN_TIME 0.01 
-#define REPLICATION 1
+#define REPLICATION 16
 
 #define DISABLE_CPUTIME
 
