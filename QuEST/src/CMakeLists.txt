@@ -4,12 +4,17 @@ else()
     add_subdirectory(CPU)
 endif()
 
+if (NEWAPI)
+    add_subdirectory(NEWAPI)
+endif()
+
 set(QuEST_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST.c
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_common.c
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_qasm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_validation.c
     ${CMAKE_CURRENT_SOURCE_DIR}/mt19937ar.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/timing.c
     ${QuEST_SRC_ARCHITECTURE_DEPENDENT}
     PARENT_SCOPE
 )

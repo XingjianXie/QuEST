@@ -1168,7 +1168,7 @@ void densmatr_initClassicalState (Qureg qureg, long long int stateInd)
 }
 
 
-void densmatr_initPlusState (Qureg qureg)
+OVERRIDABLE void densmatr_initPlusState (Qureg qureg)
 {
     // |+><+| = sum_i 1/sqrt(2^N) |i> 1/sqrt(2^N) <j| = sum_ij 1/2^N |i><j|
     long long int dim = (1LL << qureg.numQubitsRepresented);
@@ -1293,7 +1293,7 @@ void statevec_setAmps(Qureg qureg, long long int startInd, qreal* reals, qreal* 
     }
 }
 
-void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
+OVERRIDABLE void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
 {
     long long int numAmps = 1LL << numQubits;
     long long int numAmpsPerRank = numAmps/env.numRanks;
@@ -1301,11 +1301,11 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     validateMemoryAllocationSize(numAmpsPerRank, __func__);
 
     size_t arrSize = (size_t) (numAmpsPerRank * sizeof(*(qureg->stateVec.real)));
-    qureg->stateVec.real = malloc(arrSize);
-    qureg->stateVec.imag = malloc(arrSize);
+    posix_memalign((void **) &(qureg->stateVec.real), 512, arrSize);
+    posix_memalign((void **) &(qureg->stateVec.imag), 512, arrSize);
     if (env.numRanks>1){
-        qureg->pairStateVec.real = malloc(arrSize);
-        qureg->pairStateVec.imag = malloc(arrSize);
+        posix_memalign((void **) &(qureg->pairStateVec.real), 512, arrSize);
+        posix_memalign((void **) &(qureg->pairStateVec.imag), 512, arrSize);
     }
 
     qureg->numQubitsInStateVec = numQubits;
@@ -1318,7 +1318,7 @@ void statevec_createQureg(Qureg *qureg, int numQubits, QuESTEnv env)
     validateQuregAllocation(qureg, env, __func__);
 }
 
-void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
+OVERRIDABLE void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
 
     qureg.numQubitsInStateVec = 0;
     qureg.numAmpsTotal = 0;
@@ -1500,7 +1500,7 @@ void statevec_reportStateToScreen(Qureg qureg, QuESTEnv env, int reportRank){
     } else printf("Error: reportStateToScreen will not print output for systems of more than 5 qubits.\n");
 }
 
-void statevec_initBlankState (Qureg qureg)
+OVERRIDABLE void statevec_initBlankState (Qureg qureg)
 {
     long long int stateVecSize;
     long long int index;
@@ -1530,7 +1530,7 @@ void statevec_initBlankState (Qureg qureg)
     }
 }
 
-void statevec_initZeroState (Qureg qureg)
+OVERRIDABLE void statevec_initZeroState (Qureg qureg)
 {
     statevec_initBlankState(qureg);
     if (qureg.chunkId==0){
@@ -1540,7 +1540,7 @@ void statevec_initZeroState (Qureg qureg)
     }
 }
 
-void statevec_initPlusState (Qureg qureg)
+OVERRIDABLE void statevec_initPlusState (Qureg qureg)
 {
     long long int chunkSize, stateVecSize;
     long long int index;
@@ -1693,7 +1693,7 @@ void statevec_initStateOfSingleQubit(Qureg *qureg, int qubitId, int outcome)
  * each component of each probability amplitude a unique floating point value. For debugging processes
  * @param[in,out] qureg object representing the set of qubits to be initialised
  */
-void statevec_initDebugState (Qureg qureg)
+OVERRIDABLE void statevec_initDebugState (Qureg qureg)
 {
     long long int chunkSize;
     long long int index;
@@ -3213,7 +3213,7 @@ void statevec_hadamardDistributed(Qureg qureg,
     }
 }
 
-void statevec_phaseShiftByTerm (Qureg qureg, int targetQubit, Complex term)
+OVERRIDABLE void statevec_phaseShiftByTerm (Qureg qureg, int targetQubit, Complex term)
 {       
     long long int index;
     long long int stateVecSize;
@@ -3254,7 +3254,7 @@ void statevec_phaseShiftByTerm (Qureg qureg, int targetQubit, Complex term)
     }
 }
 
-void statevec_controlledPhaseShift (Qureg qureg, int idQubit1, int idQubit2, qreal angle)
+OVERRIDABLE void statevec_controlledPhaseShift (Qureg qureg, int idQubit1, int idQubit2, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -3294,7 +3294,7 @@ void statevec_controlledPhaseShift (Qureg qureg, int idQubit1, int idQubit2, qre
     }
 }
 
-void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle)
+OVERRIDABLE void statevec_multiControlledPhaseShift(Qureg qureg, int *controlQubits, int numControlQubits, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -3344,7 +3344,7 @@ int getBitMaskParity(long long int mask) {
     return parity;
 }
 
-void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
+OVERRIDABLE void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
 {
     long long int index;
     long long int stateVecSize;
@@ -3386,7 +3386,7 @@ void statevec_multiRotateZ(Qureg qureg, long long int mask, qreal angle)
     }
 }
 
-void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle) 
+OVERRIDABLE void statevec_multiControlledMultiRotateZ(Qureg qureg, long long int ctrlMask, long long int targMask, qreal angle) 
 {
     long long int offset = qureg.chunkId * qureg.numAmpsPerChunk;
 
@@ -3715,7 +3715,7 @@ void densmatr_calcProbOfAllOutcomesLocal(qreal* outcomeProbs, Qureg qureg, int* 
     }
 }
 
-void statevec_controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2)
+OVERRIDABLE void statevec_controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2)
 {
     long long int index;
     long long int stateVecSize;
@@ -3746,7 +3746,7 @@ void statevec_controlledPhaseFlip (Qureg qureg, int idQubit1, int idQubit2)
     }
 }
 
-void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
+OVERRIDABLE void statevec_multiControlledPhaseFlip(Qureg qureg, int *controlQubits, int numControlQubits)
 {
     long long int index;
     long long int stateVecSize;

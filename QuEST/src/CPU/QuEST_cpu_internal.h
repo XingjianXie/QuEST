@@ -15,6 +15,11 @@
 
 # include "QuEST_precision.h"
 
+#if (defined NEWAPI)
+    #define OVERRIDABLE __attribute__((weak))
+#else
+    #define OVERRIDABLE
+#endif
 
 /*
 * Bit twiddling functions are defined seperately here in the CPU backend, 

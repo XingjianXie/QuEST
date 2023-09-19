@@ -224,71 +224,71 @@ qreal statevec_getImagAmp(Qureg qureg, long long int index){
     return qureg.stateVec.imag[index];
 }
 
-void statevec_compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta) 
+OVERRIDABLE void statevec_compactUnitary(Qureg qureg, int targetQubit, Complex alpha, Complex beta) 
 {
     statevec_compactUnitaryLocal(qureg, targetQubit, alpha, beta);
 }
 
-void statevec_unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u) 
+OVERRIDABLE void statevec_unitary(Qureg qureg, int targetQubit, ComplexMatrix2 u) 
 {
     statevec_unitaryLocal(qureg, targetQubit, u);
 }
 
-void statevec_controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta) 
+OVERRIDABLE void statevec_controlledCompactUnitary(Qureg qureg, int controlQubit, int targetQubit, Complex alpha, Complex beta) 
 {
     statevec_controlledCompactUnitaryLocal(qureg, controlQubit, targetQubit, alpha, beta);
 }
 
-void statevec_controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u) 
+OVERRIDABLE void statevec_controlledUnitary(Qureg qureg, int controlQubit, int targetQubit, ComplexMatrix2 u) 
 {
     statevec_controlledUnitaryLocal(qureg, controlQubit, targetQubit, u);
 }
 
-void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, int targetQubit, ComplexMatrix2 u) 
+OVERRIDABLE void statevec_multiControlledUnitary(Qureg qureg, long long int ctrlQubitsMask, long long int ctrlFlipMask, int targetQubit, ComplexMatrix2 u) 
 {
     statevec_multiControlledUnitaryLocal(qureg, targetQubit, ctrlQubitsMask, ctrlFlipMask, u);
 }
 
-void statevec_pauliX(Qureg qureg, int targetQubit) 
+OVERRIDABLE void statevec_pauliX(Qureg qureg, int targetQubit) 
 {
     statevec_pauliXLocal(qureg, targetQubit);
 }
 
-void statevec_pauliY(Qureg qureg, int targetQubit) 
+OVERRIDABLE void statevec_pauliY(Qureg qureg, int targetQubit) 
 {
     int conjFac = 1;
     statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_pauliYConj(Qureg qureg, int targetQubit) 
+OVERRIDABLE void statevec_pauliYConj(Qureg qureg, int targetQubit) 
 {
     int conjFac = -1;
     statevec_pauliYLocal(qureg, targetQubit, conjFac);
 }
 
-void statevec_controlledPauliY(Qureg qureg, int controlQubit, int targetQubit)
+OVERRIDABLE void statevec_controlledPauliY(Qureg qureg, int controlQubit, int targetQubit)
 {
     int conjFac = 1;
     statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
-void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubit)
+OVERRIDABLE void statevec_controlledPauliYConj(Qureg qureg, int controlQubit, int targetQubit)
 {
     int conjFac = -1;
     statevec_controlledPauliYLocal(qureg, controlQubit, targetQubit, conjFac);
 }
 
-void statevec_hadamard(Qureg qureg, int targetQubit) 
+OVERRIDABLE void statevec_hadamard(Qureg qureg, int targetQubit) 
 {
     statevec_hadamardLocal(qureg, targetQubit);
 }
 
-void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit) 
+OVERRIDABLE void statevec_controlledNot(Qureg qureg, int controlQubit, int targetQubit) 
 {
     statevec_controlledNotLocal(qureg, controlQubit, targetQubit);
 }
 
-void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask) {
+OVERRIDABLE void statevec_multiControlledMultiQubitNot(Qureg qureg, int ctrlMask, int targMask) {
     
     statevec_multiControlledMultiQubitNotLocal(qureg, ctrlMask, targMask);
 }
@@ -340,17 +340,17 @@ void seedQuEST(QuESTEnv *env, unsigned long int *seedArray, int numSeeds) {
     init_by_array(seedArray, numSeeds); 
 }
 
-void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u)
+OVERRIDABLE void statevec_multiControlledTwoQubitUnitary(Qureg qureg, long long int ctrlMask, int q1, int q2, ComplexMatrix4 u)
 {
     statevec_multiControlledTwoQubitUnitaryLocal(qureg, ctrlMask, q1, q2, u);
 }
 
-void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u)
+OVERRIDABLE void statevec_multiControlledMultiQubitUnitary(Qureg qureg, long long int ctrlMask, int* targs, int numTargs, ComplexMatrixN u)
 {
     statevec_multiControlledMultiQubitUnitaryLocal(qureg, ctrlMask, targs, numTargs, u);
 }
 
-void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
+OVERRIDABLE void statevec_swapQubitAmps(Qureg qureg, int qb1, int qb2) 
 {
     statevec_swapQubitAmpsLocal(qureg, qb1, qb2);
 }

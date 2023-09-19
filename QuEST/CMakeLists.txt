@@ -256,17 +256,17 @@ set(CMAKE_C_FLAGS_RELEASE
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -mavx -Wall"
+    -march=native -Wall"
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -mavx -Wall"
+    -march=native -Wall"
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
   # using Intel
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} \
-    -fprotect-parens -Wall -xAVX -axCORE-AVX2 -diag-disable cpu-dispatch"
+    -fprotect-parens -Wall -xHost -diag-disable cpu-dispatch"
   )
 elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio
@@ -394,6 +394,13 @@ target_compile_definitions(QuEST
     PUBLIC
     QuEST_PREC=${PRECISION}
 )
+
+if (NEWAPI)
+    target_compile_definitions(QuEST
+        PUBLIC
+        NEWAPI
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # ----- LINK LIBRARY ---------------------------------------------------------

@@ -1,0 +1,56 @@
+buildType:
+  default: debug
+  choices:
+    debug:
+      short: Debug
+      long: Emit debug information
+      buildType: Debug
+    release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+
+enableTesting:
+  default: 'yes'
+  choices:
+    'yes':
+      short: Testing
+      long: Enable testing
+      settings:
+        TESTING: true
+    'no':
+      short: No Testing
+      long: Disable testing
+      settings:
+        TESTING: false
+
+# Profiling:
+#   default: 'no'
+#   choices:
+#     'yes':
+#       short: Profiling
+#       long: Enable profiling
+#       settings:
+#         CMAKE_C_FLAGS: -pg -fno-inline
+#         CMAKE_CXX_FLAGS: -pg -fno-inline
+#         CMAKE_EXE_LINKER_FLAGS: -pg
+#         CMAKE_SHARED_LINKER_FLAGS: -pg
+#     'no':
+#       short: No Profiling
+#       long: Disable profiling
+
+APISetting:
+  default: 'New API'
+  choices:
+    'New API':
+      short: New API
+      long: New API
+      settings:
+        NEWAPI: true
+        OUTPUT_EXE: demo_new
+    'Old API':
+      short: Old API
+      long: Old API
+      settings:
+        NEWAPI: false
+        OUTPUT_EXE: demo
