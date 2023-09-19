@@ -402,6 +402,13 @@ if (NEWAPI)
     )
 endif()
 
+if (COMPRESS)
+    target_compile_definitions(QuEST
+        PUBLIC
+        COMPRESS
+    )
+endif()
+
 # -----------------------------------------------------------------------------
 # ----- LINK LIBRARY ---------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -421,6 +428,13 @@ if (USE_HIP)
   target_link_libraries(QuEST PUBLIC  ${HIP_PATH}/lib/libamdhip64.so )
 else()
   target_link_libraries(QuEST ${CUDA_LIBRARIES})
+endif()
+
+# ----- ZSTD ------------------------------------------------------------------
+if (COMPRESS)
+  add_subdirectory(../zstd/build/cmake zstd)
+  target_link_libraries(QuEST PUBLIC libzstd_static)
+  target_include_directories(QuEST PUBLIC ../zstd/lib/) 
 endif()
 
 # ----- Coverage testing with GCC or Clang ------------------------------------

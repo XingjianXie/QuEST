@@ -33,6 +33,7 @@
 # define QUEST_H
 
 # include "QuEST_precision.h"
+# include <stddef.h>
 
 // prevent C++ name mangling
 #ifdef __cplusplus
@@ -333,6 +334,13 @@ typedef struct SubDiagonalOp
     
 } SubDiagonalOp;
 
+#ifdef COMPRESS
+typedef struct {
+    size_t size;
+    void *data;
+} compressed_t;
+#endif
+
 /** Represents a system of qubits.
  * Qubits are zero-based
  *
@@ -370,7 +378,21 @@ typedef struct Qureg
 
     //! Storage for generated QASM output
     QASMLogger* qasmLog;
-    
+
+
+#ifdef COMPRESS
+     size_t numQubits;
+     size_t numAmps;
+
+     size_t compressBlockSize;
+     size_t compressBlockCount;
+
+     size_t numSubBlocksPerBlock;
+     size_t subBlockSize;
+     size_t subBlockCount;
+     compressed_t* compressedRealBlocks;
+     compressed_t* compressedImagBlocks;
+#endif
 } Qureg;
 
 /** Information about the environment the program is running in.
@@ -7216,6 +7238,11 @@ void applyQFT(Qureg qureg, int* qubits, int numQubits);
  * @author Tyson Jones
  */
 void applyProjector(Qureg qureg, int qubit, int outcome);
+
+#ifdef COMPRESS
+void compressBlock(Qureg *qureg, size_t blockIndex, double* contentReal, double* contentImag);
+void decompressBlock(Qureg *qureg, size_t blockIndex, double* bufferReal, double* bufferImag);
+#endif
 
 // end prevention of C++ name mangling
 #ifdef __cplusplus

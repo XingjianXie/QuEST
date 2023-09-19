@@ -901,11 +901,20 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
     
     // the starting index in vec of this node's qureg partition.
     long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
+
+#ifdef COMPRESS
+    QVector qureg_vec = toQVector(qureg);
+#endif
             
     int ampsAgree = 1;
     for (long long int i=0; i<qureg.numAmpsPerChunk; i++) {
+#ifdef COMPRESS
+        qreal realDif = absReal(real(qureg_vec[i]) - real(vec[startInd+i]));
+        qreal imagDif = absReal(imag(qureg_vec[i]) - imag(vec[startInd+i]));
+#else
         qreal realDif = absReal(qureg.stateVec.real[i] - real(vec[startInd+i]));
         qreal imagDif = absReal(qureg.stateVec.imag[i] - imag(vec[startInd+i]));
+#endif
 
         if (realDif > precision || imagDif > precision) {
             ampsAgree = 0;
@@ -918,7 +927,11 @@ bool areEqual(Qureg qureg, QVector vec, qreal precision) {
                 REAL_STRING_FORMAT, REAL_STRING_FORMAT, REAL_STRING_FORMAT);
             printf(buff,
                 realDif, imagDif,
+#ifdef COMPRESS
+                real(qureg_vec[i]), imag(qureg_vec[i]),
+#else
                 qureg.stateVec.real[i], qureg.stateVec.imag[i],
+#endif
                 real(vec[startInd+i]), imag(vec[startInd+i]));
             
             break;
@@ -949,14 +962,23 @@ bool areEqual(Qureg qureg, QMatrix matr, qreal precision) {
     long long int startInd = qureg.chunkId * qureg.numAmpsPerChunk;
     long long int globalInd, row, col, i;
     int ampsAgree;
+
+#ifdef COMPRESS
+    QMatrix qureg_matr = toQMatrix(qureg);
+#endif
     
     // compare each of this node's amplitude to the corresponding matr sub-matrix
     for (i=0; i<qureg.numAmpsPerChunk; i++) {
         globalInd = startInd + i;
         row = globalInd % matr.size();
         col = globalInd / matr.size();
+#ifdef COMPRESS
+        qreal realDif = absReal(real(qureg_matr[row][col]) - real(matr[row][col]));
+        qreal imagDif = absReal(imag(qureg_matr[row][col]) - imag(matr[row][col]));
+#else
         qreal realDif = absReal(qureg.stateVec.real[i] - real(matr[row][col]));
         qreal imagDif = absReal(qureg.stateVec.imag[i] - imag(matr[row][col]));
+#endif
         ampsAgree = (realDif < precision && imagDif < precision);
         
         // DEBUG
@@ -1111,8 +1133,21 @@ QMatrix toQMatrix(Qureg qureg) {
     // copy full state vector into a QVector
     long long int dim = (1 << qureg.numQubitsRepresented);
     QMatrix matr = getZeroMatrix(dim);
+#ifndef COMPRESS
     for (long long int n=0; n<qureg.numAmpsTotal; n++)
         matr[n%dim][n/dim] = qcomp(fullRe[n], fullIm[n]);
+#else
+    for (size_t i = 0; i < qureg.compressBlockCount; i++) {
+        double *real = new double[qureg.compressBlockSize];
+        double *imag = new double[qureg.compressBlockSize];
+        decompressBlock(&qureg, i, real, imag);
+        for (size_t j = 0; j < qureg.compressBlockSize; j++) {
+            matr[(i * qureg.compressBlockSize + j) % dim][(i * qureg.compressBlockSize + j) / dim] = qcomp(real[j], imag[j]);
+        }
+        delete[] real;
+        delete[] imag;
+    }
+#endif
     
     // clean up if we malloc'd the distributed array
 #ifdef DISTRIBUTED_MODE
@@ -1153,8 +1188,22 @@ QVector toQVector(Qureg qureg) {
     
     // copy full state vector into a QVector
     QVector vec = QVector(qureg.numAmpsTotal);
+
+#ifndef COMPRESS
     for (long long int i=0; i<qureg.numAmpsTotal; i++)
         vec[i] = qcomp(fullRe[i], fullIm[i]);
+#else
+    for (size_t i = 0; i < qureg.compressBlockCount; i++) {
+        double *real = new double[qureg.compressBlockSize];
+        double *imag = new double[qureg.compressBlockSize];
+        decompressBlock(&qureg, i, real, imag);
+        for (size_t j = 0; j < qureg.compressBlockSize; j++) {
+            vec[i * qureg.compressBlockSize + j] = qcomp(real[j], imag[j]);
+        }
+        delete[] real;
+        delete[] imag;
+    }
+#endif
             
     // clean up if we malloc'd distrib array
 #ifdef DISTRIBUTED_MODE

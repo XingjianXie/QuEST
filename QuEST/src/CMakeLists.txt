@@ -8,6 +8,10 @@ if (NEWAPI)
     add_subdirectory(NEWAPI)
 endif()
 
+if (COMPRESS)
+    add_subdirectory(COMPRESS)
+endif()
+
 set(QuEST_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST.c
     ${CMAKE_CURRENT_SOURCE_DIR}/QuEST_common.c

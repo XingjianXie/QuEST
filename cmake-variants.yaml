@@ -42,6 +42,12 @@ enableTesting:
 APISetting:
   default: 'New API'
   choices:
+    'Compress':
+      short: Compress
+      long: Compress
+      settings:
+        COMPRESS: true
+        OUTPUT_EXE: demo_compress
     'New API':
       short: New API
       long: New API

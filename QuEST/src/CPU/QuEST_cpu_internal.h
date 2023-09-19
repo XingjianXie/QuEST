@@ -15,7 +15,7 @@
 
 # include "QuEST_precision.h"
 
-#if (defined NEWAPI)
+#if (defined NEWAPI || defined COMPRESS)
     #define OVERRIDABLE __attribute__((weak))
 #else
     #define OVERRIDABLE

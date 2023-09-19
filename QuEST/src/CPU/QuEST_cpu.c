@@ -1334,6 +1334,28 @@ OVERRIDABLE void statevec_destroyQureg(Qureg qureg, QuESTEnv env){
     qureg.stateVec.imag = NULL;
     qureg.pairStateVec.real = NULL;
     qureg.pairStateVec.imag = NULL;
+
+#ifdef COMPRESS
+    for (size_t i = 0; i < qureg.subBlockCount; i++) {
+        free(qureg.compressedRealBlocks[i].data);
+        free(qureg.compressedImagBlocks[i].data);
+        qureg.compressedRealBlocks[i].data = NULL;
+        qureg.compressedImagBlocks[i].data = NULL;
+        qureg.compressedRealBlocks[i].size = 0;
+        qureg.compressedImagBlocks[i].size = 0;
+    }
+    free(qureg.compressedRealBlocks);
+    free(qureg.compressedImagBlocks);
+    qureg.compressedRealBlocks = NULL;
+    qureg.compressedImagBlocks = NULL;
+    qureg.numQubits = 0;
+    qureg.numAmps = 0;
+    qureg.compressBlockSize = 0;
+    qureg.compressBlockCount = 0;
+    qureg.numSubBlocksPerBlock = 0;
+    qureg.subBlockSize = 0;
+    qureg.subBlockCount = 0;
+#endif
 }
 
 void statevec_applySubDiagonalOp(Qureg qureg, int* targets, SubDiagonalOp op, int conj) {
