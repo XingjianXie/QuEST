@@ -1,0 +1,99 @@
+name: Run benchmarking
+on:
+  push
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        command_timeout: 600m
+        proxy_host: ${{ vars.PROXY_HOST }}
+        proxy_username: ${{ secrets.USERNAME }}
+        proxy_key: ${{ secrets.KEY }}
+        proxy_port: ${{ secrets.PORT }}
+        script: |
+          ${{ vars.PRE }}
+          cd ci
+          mkdir ${{ github.run_id }}
+          cd ${{ github.run_id }}
+          git clone git@github.com:XingjianXie/QuEST.git
+          cd QuEST
+          git checkout ${{ github.sha }}
+          git submodule update --init
+          cmake --no-warn-unused-cli -DTESTING:BOOL=TRUE -DNEWAPI:BOOL=TRUE -DCOMPRESS:BOOL=FALSE -DOUTPUT_EXE:STRING=demo_new -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build_test
+          cmake --build build_test --config Release --target all -j ${{ vars.NUM_THREADS }} --
+          build_test/tests/tests [unitaries] -j ${{ vars.NUM_THREADS }}
+          cd ../..
+          rm -rf ${{ github.run_id }}
+
+  benchmark:
+    name: Benchmarking
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: executing remote ssh commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        command_timeout: 600m
+        proxy_host: ${{ vars.PROXY_HOST }}
+        proxy_username: ${{ secrets.USERNAME }}
+        proxy_key: ${{ secrets.KEY }}
+        proxy_port: ${{ secrets.PORT }}
+        script: |
+          ${{ vars.PRE }}
+          cd ci
+          mkdir ${{ github.run_id }}
+          cd ${{ github.run_id }}
+          git clone git@github.com:XingjianXie/QuEST.git
+          cd QuEST
+          git checkout ${{ github.sha }}
+          git submodule update --init
+          cmake --no-warn-unused-cli -DTESTING:BOOL=FALSE -DNEWAPI:BOOL=FALSE -DOUTPUT_EXE:STRING=demo -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build_old
+          cmake --build build_old --config Release --target all -j ${{ vars.NUM_THREADS }} --
+          cmake --no-warn-unused-cli -DTESTING:BOOL=FALSE -DNEWAPI:BOOL=TRUE -DCOMPRESS:BOOL=FALSE -DOUTPUT_EXE:STRING=demo_new -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build_new
+          cmake --build build_new --config Release --target all -j ${{ vars.NUM_THREADS }} --
+          build_old/demo ${{ vars.NUM_THREADS }} ${{ vars.NUM_QUBITS }} >> output.log 2> mem.log1
+          build_new/demo_new ${{ vars.NUM_THREADS }} ${{ vars.NUM_QUBITS }} >> output.log 2> mem.log2
+          cat output.log | python3 graph.py
+    - name: Copy files from proxy server
+      run: |
+        mkdir -p artifacts
+        echo "${{ secrets.KEY }}" > temp_key
+        chmod 600 temp_key
+        scp -o StrictHostKeyChecking=no -P ${{ secrets.PORT }} -i temp_key ${{ secrets.USERNAME }}@${{ vars.PROXY_HOST }}:"{ci/${{ github.run_id }}/QuEST/output.log,ci/${{ github.run_id }}/QuEST/output.png,ci/${{ github.run_id }}/QuEST/mem.log1,ci/${{ github.run_id }}/QuEST/mem.log2}" artifacts/
+        rm temp_key
+    - name: Clean up remote server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.PROXY_HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          rm -rf ci/${{ github.run_id }}
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-artifacts
+        path: artifacts/
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: benchmark
+    steps:
+      - name: Send notification
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://api2.pushdeer.com/message/push?pushkey=${{ secrets.PUSHDEER_KEY }}&text=Action%20Complete&desp=%5BGitHub%20Actions%5D%28https%3A%2F%2Fgithub.com%2FXingjianXie%2FQuEST%2Factions%2Fruns%2F${{ github.run_id }}%29&type=markdown'
+          method: 'GET'
